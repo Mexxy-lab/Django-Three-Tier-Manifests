@@ -21,7 +21,7 @@ This guide walks you through deploying a multi-tier application (frontend, backe
 ## ✅ Prerequisites
 
 - Minikube running locally
-- Domain registered on Cloudflare (e.g., `madeep.shop`)
+- Domain registered on Cloudflare (e.g., `pumej.shop`)
 - Cloudflare account & API access
 - `cloudflared` installed
 - Ingress NGINX installed via YAML:
@@ -65,7 +65,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: django.madeep.shop
+  - host: django.pumej.shop
     http:
       paths:
       - path: /
@@ -84,7 +84,7 @@ spec:
               number: 5000
   tls:
   - hosts:
-    - django.madeep.shop
+    - django.pumej.shop
     secretName: django-tls
 ```
 
@@ -115,7 +115,7 @@ metadata:
 spec:
   acme:
     server: https://acme-v02.api.letsencrypt.org/directory
-    email: madeep9347@gmail.com
+    email: pumej1985@gmail.com
     privateKeySecretRef:
       name: letsencrypt-prod
     solvers:
@@ -172,7 +172,7 @@ tunnel: ee4fb984-c29b-4ab5-83a8-f9eb3c5b5af2
 credentials-file: /home/nepra/.cloudflared/ee4fb984-c29b-4ab5-83a8-f9eb3c5b5af2.json
 
 ingress:
-  - hostname: django.madeep.shop
+  - hostname: django.pumej.shop
     service: http://127.0.0.1:8086
   - service: http_status:404
 ```
@@ -196,7 +196,7 @@ Ensure status is `active (running)`.
 Link your domain to the tunnel:
 
 ```bash
-cloudflared tunnel route dns django-tunnel django.madeep.shop
+cloudflared tunnel route dns django-tunnel django.pumej.shop
 ```
 
 Or add manually via Cloudflare Dashboard:
