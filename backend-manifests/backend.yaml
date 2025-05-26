@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: django
-          image: pumej2468/django-backend:latest
+          image: pumejlab/django-backend:latest
           ports:
             - containerPort: 8000
           resources:
