@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: frontend-django
-          image: pumejlab/django-frontend:1
+          image: pumejlab/django-frontend:4
           imagePullPolicy: Always
           ports:
             - containerPort: 3001
