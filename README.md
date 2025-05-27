@@ -13,8 +13,8 @@ This guide walks you through deploying a multi-tier application (frontend, backe
   - Frontend (port `80`)
   - Backend (port `8000`)
   - MySQL (port `3306`)
-- **Domain**: `madeep.shop` managed via Cloudflare  
-- **Tunnel Access**: `django.madeep.shop` via Cloudflare Tunnel  
+- **Domain**: `pumej.shop` managed via Cloudflare  
+- **Tunnel Access**: `django.pumej.shop` via Cloudflare Tunnel
 
 ---
 
