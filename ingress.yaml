@@ -1,3 +1,38 @@
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: django-ingress
+#   namespace: django
+#   annotations:
+#     nginx.ingress.kubernetes.io/use-regex: "true"
+#     nginx.ingress.kubernetes.io/ssl-redirect: "true"
+#     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+#     cert-manager.io/cluster-issuer: "letsencrypt-prod"
+# spec:
+#   ingressClassName: nginx
+#   rules:
+#     - host: django.pumej.com
+#       http:
+#         paths:
+#           - path: /
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: frontend-django-service
+#                 port:
+#                   number: 80
+#           - path: /api
+#             pathType: ImplementationSpecific
+#             backend:
+#               service:
+#                 name: django-service
+#                 port:
+#                   number: 8000
+#   tls:
+#     - hosts:
+#         - django.pumej.com
+#       secretName: app-tls
+
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -11,24 +46,24 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: django.pumej.com
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: frontend-django-service
-                port:
-                  number: 80
-          - path: /api
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: django-service
-                port:
-                  number: 8000
+  - host: django.pumej.com
+    http:
+      paths:
+      - path: /api(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: django-service
+            port:
+              number: 8000
+      - path: /(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend-django-service
+            port:
+              number: 80
   tls:
-    - hosts:
-        - django.pumej.com
-      secretName: app-tls
+  - hosts:
+    - django.pumej.com
+    secretName: app-tls

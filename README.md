@@ -36,16 +36,26 @@ This guide walks you through deploying a multi-tier application (frontend, backe
 
 ### 1️⃣ Deploy Your App
 
-Deploy frontend, backend, MySQL, and Ingress resources.
+Deploy frontend, backend, MySQL, and Ingress resources. Follow the below sequence:
 
 ```bash
- kubectl apply -f frontend-manifests/frontend.yaml -n django
- kubectl apply -f secrets.yaml -n django                      | Has to be deployed first before deploying the backend
-  kubectl apply -f backend-manifests/backend.yaml -n django
-   kubectl apply -f mysql-statefulset.yaml -n django          | Used to deploy the mysql
-    kubectl apply -f ingress.yaml -n django                    | Used to deploy ingress 
+kubectl apply -f namespace.yaml
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.15.1/cert-manager.yaml
+kubectl apply -f cluster-issuer.yaml
+kubectl apply -f secrets.yaml
+kubectl apply -f mysqlstatefulset.yaml
+kubectl apply -f backend-manifests/backend.yaml
+kubectl apply -f frontend-manifests/frontend.yaml
+kubectl apply -f ingress.yaml
+```
 
-Once deployed, **migrate the database** in the Django backend: You need to create the database table first 
+Or run the deploy script on the terminal
+
+```bash
+./deploy.sh
+```
+
+Once deployed, **migrate the database** in the Django backend: You need to create the database table first
 
 ```bash
 kubectl exec -it mysql-0 -n django -- mysql -u root -p        | Login with password set in secrets file. 
@@ -53,6 +63,7 @@ CREATE DATABASE django_database;
 
 kubectl exec -it django-backend-559844868-9gdgj -n django -- python manage.py makemigrations -n django
 kubectl exec -it django-backend-559844868-9gdgj -n django -- python manage.py migrate
+kubectl exec -it django-backend-559844868-9gdgj -n django -- python manage.py createsuperuser
 ```
 
 You can find the backend pod name using:
@@ -61,51 +72,6 @@ You can find the backend pod name using:
 kubectl get pods -n django
 ```
 
-#### Example Ingress
-
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: app-ingress
-  namespace: django
-  annotations:
-    nginx.ingress.kubernetes.io/use-regex: "true"
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-spec:
-  ingressClassName: nginx
-  rules:
-  - host: django.pumej.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: frontend-service
-            port:
-              number: 80
-      - path: /api
-        pathType: ImplementationSpecific
-        backend:
-          service:
-            name: backend-service
-            port:
-              number: 5000
-  tls:
-  - hosts:
-    - django.pumej.com
-    secretName: django-tls
-```
-
-Apply Ingress:
-
-```bash
-kubectl apply -f ingress.yaml
-```
-
----
-
 ### 2️⃣ Install cert-manager & ClusterIssuer
 
 Install cert-manager (for Let’s Encrypt TLS):
@@ -113,34 +79,6 @@ Install cert-manager (for Let’s Encrypt TLS):
 ```bash
 kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.15.1/cert-manager.yaml
 ```
-
-#### Create `cluster-issuer.yaml`
-
-```yaml
-apiVersion: cert-manager.io/v1
-kind: ClusterIssuer
-metadata:
-  name: letsencrypt-prod
-  namespace: django
-spec:
-  acme:
-    server: https://acme-v02.api.letsencrypt.org/directory
-    email: pumej1985@gmail.com
-    privateKeySecretRef:
-      name: letsencrypt-prod
-    solvers:
-    - http01:
-        ingress:
-          class: nginx
-```
-
-Apply it:
-
-```bash
-kubectl apply -f cluster-issuer.yaml
-```
-
----
 
 ### 3️⃣ Port-Forward NGINX Ingress Locally
 
@@ -157,10 +95,6 @@ kubectl port-forward svc/ingress-nginx-controller 8000:80 -n ingress-nginx
 ```bash
 sudo apt update
 sudo apt install -y cloudflared
-# OR
-curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg | sudo tee /usr/share/keyrings/cloudflare-main.gpg > /dev/null
-echo 'deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/cloudflared jammy main' | sudo tee /etc/apt/sources.list.d/cloudflared.list
-sudo apt-get install -y cloudflared
 ```
 
 #### Authenticate & Create Tunnel
@@ -168,7 +102,6 @@ sudo apt-get install -y cloudflared
 ```bash
 cloudflared tunnel login
 cloudflared tunnel create django-tunnel         | Used to generate the Tunnel ID 
-cloudflared tunnel route dns django-tunnel django.pumej.com         | Used this to update your cname to point to your domain 
 ```
 
 #### Configure Tunnel
@@ -186,11 +119,9 @@ credentials-file: /home/nepra/.cloudflared/XXX.json
 
 ingress:
   - hostname: django.pumej.com
-    service: http://127.0.0.1:8086
+    service: http://127.0.0.1:8000
   - service: http_status:404
 ```
-
----
 
 ### 5️⃣ Start Cloudflared as a Service
 
@@ -226,13 +157,14 @@ Or add manually via Cloudflare Dashboard:
 - DNS resolves:
 
   ```bash
-  dig CNAME django.pumej.com +short
+  dig CNAME django.pumej.com
   ```
 
 - Check ingress:
 
   ```bash
   kubectl get ingress -n django
+  kubectl describe ingress django-ingress -n django
   ```
 
 Now visit:  
