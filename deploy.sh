@@ -27,6 +27,9 @@ kubectl apply -f backend-manifests/backend.yaml -n $NAMESPACE
 echo "Applying frontend deployment and service..."
 kubectl apply -f frontend-manifests/frontend.yaml -n $NAMESPACE
 
+echo "Applying Ingress controller for ingress service..."
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.10.1/deploy/static/provider/cloud/deploy.yaml
+
 echo "Applying ingress..."
 kubectl apply -f ingress.yaml -n $NAMESPACE
 
