@@ -61,9 +61,9 @@ Once deployed, **migrate the database** in the Django backend: You need to creat
 kubectl exec -it mysql-0 -n django -- mysql -u root -p        | Login with password set in secrets file. 
 CREATE DATABASE django_database;
 
-kubectl exec -it django-backend-559844868-9gdgj -n django -- python manage.py makemigrations -n django
-kubectl exec -it django-backend-559844868-9gdgj -n django -- python manage.py migrate
-kubectl exec -it django-backend-559844868-9gdgj -n django -- python manage.py createsuperuser
+kubectl exec -it django-backend-7745655654-b8jhv -n django -- python manage.py makemigrations -n django
+kubectl exec -it django-backend-7745655654-b8jhv -n django -- python manage.py migrate
+kubectl exec -it django-backend-7745655654-b8jhv -n django -- python manage.py createsuperuser
 ```
 
 You can find the backend pod name using:
@@ -109,6 +109,8 @@ cloudflared tunnel create django-tunnel         | Used to generate the Tunnel ID
 sudo mkdir -p /etc/cloudflared
 sudo nano /etc/cloudflared/config.yml
 ```
+/home/pumej/.cloudflared/0a70202e-aa79-4627-a2f4-06b14458a39b.json
+0a70202e-aa79-4627-a2f4-06b14458a39b
 
 Paste the following:
 
