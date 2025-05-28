@@ -13,15 +13,15 @@ This guide walks you through deploying a multi-tier application (frontend, backe
   - Frontend (port `80`)
   - Backend (port `8000`)
   - MySQL (port `3306`)
-- **Domain**: `pumej.shop` managed via Cloudflare  
-- **Tunnel Access**: `django.pumej.shop` via Cloudflare Tunnel
+- **Domain**: `pumej.com` managed via Cloudflare  
+- **Tunnel Access**: `django.pumej.com` via Cloudflare Tunnel
 
 ---
 
 ## ✅ Prerequisites
 
 - Minikube running locally
-- Domain registered on Cloudflare (e.g., `pumej.shop`)
+- Domain registered on Cloudflare (e.g., `pumej.com`)
 - Cloudflare account & API access
 - `cloudflared` installed
 - Ingress NGINX installed via YAML:
@@ -38,11 +38,21 @@ This guide walks you through deploying a multi-tier application (frontend, backe
 
 Deploy frontend, backend, MySQL, and Ingress resources.
 
-Once deployed, **migrate the database** in the Django backend:
+```bash
+ kubectl apply -f frontend-manifests/frontend.yaml -n django
+ kubectl apply -f secrets.yaml -n django                      | Has to be deployed first before deploying the backend
+  kubectl apply -f backend-manifests/backend.yaml -n django
+   kubectl apply -f mysql-statefulset.yaml -n django          | Used to deploy the mysql
+    kubectl apply -f ingress.yaml -n django                    | Used to deploy ingress 
+
+Once deployed, **migrate the database** in the Django backend: You need to create the database table first 
 
 ```bash
-kubectl exec -it <django-backend-pod-name> -- python manage.py makemigrations -n django
-kubectl exec -it <django-backend-pod-name> -- python manage.py migrate -n django
+kubectl exec -it mysql-0 -n django -- mysql -u root -p        | Login with password set in secrets file. 
+CREATE DATABASE django_database;
+
+kubectl exec -it django-backend-559844868-9gdgj -n django -- python manage.py makemigrations -n django
+kubectl exec -it django-backend-559844868-9gdgj -n django -- python manage.py migrate
 ```
 
 You can find the backend pod name using:
@@ -65,7 +75,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: django.pumej.shop
+  - host: django.pumej.com
     http:
       paths:
       - path: /
@@ -84,14 +94,14 @@ spec:
               number: 5000
   tls:
   - hosts:
-    - django.pumej.shop
+    - django.pumej.com
     secretName: django-tls
 ```
 
 Apply Ingress:
 
 ```bash
-kubectl apply -f app-ingress.yaml
+kubectl apply -f ingress.yaml
 ```
 
 ---
@@ -135,7 +145,7 @@ kubectl apply -f cluster-issuer.yaml
 ### 3️⃣ Port-Forward NGINX Ingress Locally
 
 ```bash
-kubectl port-forward svc/ingress-nginx-controller 8086:80 -n ingress-nginx
+kubectl port-forward svc/ingress-nginx-controller 8000:80 -n ingress-nginx
 ```
 
 ---
@@ -145,6 +155,7 @@ kubectl port-forward svc/ingress-nginx-controller 8086:80 -n ingress-nginx
 #### Install `cloudflared`
 
 ```bash
+sudo apt update
 sudo apt install -y cloudflared
 # OR
 curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg | sudo tee /usr/share/keyrings/cloudflare-main.gpg > /dev/null
@@ -156,23 +167,25 @@ sudo apt-get install -y cloudflared
 
 ```bash
 cloudflared tunnel login
-cloudflared tunnel create django-tunnel
+cloudflared tunnel create django-tunnel         | Used to generate the Tunnel ID 
+cloudflared tunnel route dns django-tunnel django.pumej.com         | Used this to update your cname to point to your domain 
 ```
 
 #### Configure Tunnel
 
 ```bash
+sudo mkdir -p /etc/cloudflared
 sudo nano /etc/cloudflared/config.yml
 ```
 
 Paste the following:
 
 ```yaml
-tunnel: ee4fb984-c29b-4ab5-83a8-f9eb3c5b5af2
-credentials-file: /home/nepra/.cloudflared/ee4fb984-c29b-4ab5-83a8-f9eb3c5b5af2.json
+tunnel: XXX-ID
+credentials-file: /home/nepra/.cloudflared/XXX.json
 
 ingress:
-  - hostname: django.pumej.shop
+  - hostname: django.pumej.com
     service: http://127.0.0.1:8086
   - service: http_status:404
 ```
@@ -196,7 +209,7 @@ Ensure status is `active (running)`.
 Link your domain to the tunnel:
 
 ```bash
-cloudflared tunnel route dns django-tunnel django.pumej.shop
+cloudflared tunnel route dns django-tunnel django.pumej.com
 ```
 
 Or add manually via Cloudflare Dashboard:
@@ -213,7 +226,7 @@ Or add manually via Cloudflare Dashboard:
 - DNS resolves:
 
   ```bash
-  dig CNAME django.pumej.shop +short
+  dig CNAME django.pumej.com +short
   ```
 
 - Check ingress:
@@ -223,7 +236,7 @@ Or add manually via Cloudflare Dashboard:
   ```
 
 Now visit:  
-🔗 <https://django.pumej.shop>
+🔗 <https://django.pumej.com>
 
 You should see your frontend served over HTTPS.
 
