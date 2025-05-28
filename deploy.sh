@@ -12,6 +12,9 @@ kubectl apply -f https://github.com/cert-manager/cert-manager/releases/latest/do
 echo "Waiting for cert-manager pods to be ready..."
 kubectl wait --namespace cert-manager --for=condition=Ready pod --all --timeout=120s
 
+echo "Waiting 20 seconds for cert-manager webhook initialization..."
+sleep 20
+
 echo "Applying ClusterIssuer..."
 kubectl apply -f cluster-issuer.yaml
 
