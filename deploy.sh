@@ -9,11 +9,19 @@ kubectl apply -f namespace.yaml
 echo "Installing cert-manager..."
 kubectl apply -f https://github.com/cert-manager/cert-manager/releases/latest/download/cert-manager.yaml
 
-echo "Waiting for cert-manager pods to be ready..."
-kubectl wait --namespace cert-manager --for=condition=Ready pod --all --timeout=120s
+echo "Waiting for cert-manager webhook to be ready..."
 
-echo "Waiting 20 seconds for cert-manager webhook initialization..."
-sleep 20
+kubectl rollout status deployment cert-manager-webhook -n cert-manager --timeout=180s
+
+echo "Checking if cert-manager webhook is ready..."
+
+until kubectl run curl --image=radial/busyboxplus:curl -i --rm --restart=Never -- \
+    curl -fsS https://cert-manager-webhook.cert-manager.svc:443/healthz --insecure; do
+  echo "Webhook not ready yet. Retrying in 10s..."
+  sleep 10
+done
+
+echo "Webhook is ready!"
 
 echo "Applying ClusterIssuer..."
 kubectl apply -f cluster-issuer.yaml
