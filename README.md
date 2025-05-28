@@ -70,6 +70,7 @@ You can find the backend pod name using:
 
 ```bash
 kubectl get pods -n django
+kubectl get svc -n ingress-nginx
 ```
 
 ### 2️⃣ Install cert-manager & ClusterIssuer
@@ -85,8 +86,6 @@ kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/
 ```bash
 kubectl port-forward svc/ingress-nginx-controller 8000:80 -n ingress-nginx
 ```
-
----
 
 ### 4️⃣ Configure Cloudflare Tunnel
 
@@ -119,7 +118,7 @@ credentials-file: /home/nepra/.cloudflared/XXX.json
 
 ingress:
   - hostname: django.pumej.com
-    service: http://127.0.0.1:8000
+    service: http://127.0.0.1:Nodeport
   - service: http_status:404
 ```
 
@@ -132,8 +131,6 @@ sudo systemctl status cloudflared
 ```
 
 Ensure status is `active (running)`.
-
----
 
 ### 6️⃣ Configure Cloudflare DNS
 
@@ -149,8 +146,6 @@ Or add manually via Cloudflare Dashboard:
 - Name: `django`
 - Target: `<your-tunnel-id>.cfargotunnel.com`
 - Proxy status: **Proxied**
-
----
 
 ## ✅ Final Checks
 
@@ -172,8 +167,6 @@ Now visit:
 
 You should see your frontend served over HTTPS.
 
----
-
 ## 🧼 Cleanup
 
 To remove everything:
@@ -183,8 +176,6 @@ cloudflared tunnel delete django-tunnel
 kubectl delete -f app-ingress.yaml
 kubectl delete -f cluster-issuer.yaml
 ```
-
----
 
 ## 📧 Contact
 
