@@ -14,7 +14,7 @@
 #     spec:
 #       containers:
 #         - name: django
-#           image: pumejlab/django-backend:3
+#           image: pumejlab/django-backend:1
 #           ports:
 #             - containerPort: 8000
 #           resources:
@@ -77,7 +77,7 @@ spec:
     spec:
       containers:
       - name: django
-        image: pumejlab/django-backend:latest
+        image: pumejlab/django-backend:1
         ports:
         - containerPort: 8000
         resources:
