@@ -19,9 +19,9 @@ spec:
           image: pumejlab/django-frontend:2
           imagePullPolicy: Always
           ports:
-            - containerPort: 3001
+            - containerPort: 80 # Update to 3001 if port assigned in docker is 3001. Same in service
           # env:
-          #   - name: REACT_APP_API_URL
+          #   - name: REACT_APP_API_BASE
           #     value: "http://django-service.django.svc.cluster.local:8000"
           resources:
             requests:
@@ -41,5 +41,5 @@ spec:
     app: frontend-django
   ports:
     - port: 80
-      targetPort: 3001
+      targetPort: 80
       protocol: TCP

@@ -61,9 +61,9 @@ Once deployed, **migrate the database** in the Django backend: You need to creat
 kubectl exec -it mysql-0 -n django -- mysql -u root -p        | Login with password set in secrets file. 
 CREATE DATABASE django_database;
 
-kubectl exec -it django-backend-7745655654-b8jhv -n django -- python manage.py makemigrations -n django
-kubectl exec -it django-backend-7745655654-b8jhv -n django -- python manage.py migrate
-kubectl exec -it django-backend-7745655654-b8jhv -n django -- python manage.py createsuperuser
+kubectl exec -it django-backend-7745655654-vpzgd -n django -- python manage.py makemigrations 
+kubectl exec -it django-backend-7745655654-vpzgd -n django -- python manage.py migrate
+kubectl exec -it django-backend-7745655654-vpzgd -n django -- python manage.py createsuperuser
 ```
 
 You can find the backend pod name using:
@@ -101,6 +101,13 @@ sudo apt install -y cloudflared
 ```bash
 cloudflared tunnel login
 cloudflared tunnel create django-tunnel         | Used to generate the Tunnel ID 
+cloudflared tunnel list                         | Used to list available tunnels 
+
+## You must create a new channel for a new deployment and update the config file after creating a new channel 
+cloudflared tunnel delete <TUNNEL_ID>           | Used to delete tunnel list 
+cloudflared tunnel info django-tunnel               | Used to view status 
+journalctl -u cloudflared -f                        | Used to view logs 
+cloudflared tunnel route dns django-tunnel django.pumej.com             | Used to update CNAME to cloudfared
 ```
 
 #### Configure Tunnel
@@ -109,8 +116,6 @@ cloudflared tunnel create django-tunnel         | Used to generate the Tunnel ID
 sudo mkdir -p /etc/cloudflared
 sudo nano /etc/cloudflared/config.yml
 ```
-/home/pumej/.cloudflared/0a70202e-aa79-4627-a2f4-06b14458a39b.json
-0a70202e-aa79-4627-a2f4-06b14458a39b
 
 Paste the following:
 
@@ -127,7 +132,6 @@ ingress:
 ### 5️⃣ Start Cloudflared as a Service
 
 ```bash
-sudo cloudflared service install
 sudo systemctl start cloudflared
 sudo systemctl status cloudflared
 ```

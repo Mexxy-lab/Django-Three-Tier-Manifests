@@ -25,7 +25,7 @@ echo "Waiting for cert-manager webhook to be ready..."
 kubectl rollout status deployment cert-manager-webhook -n cert-manager --timeout=180s
 
 echo "Applying ClusterIssuer..."
-kubectl apply -f cluster-issuer.yaml
+kubectl apply -f cluster-issuer.yaml -n $NAMESPACE
 
 echo "Installing Ingress controller..."
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.10.1/deploy/static/provider/cloud/deploy.yaml
