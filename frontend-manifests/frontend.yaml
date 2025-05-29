@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: frontend-django
-          image: pumejlab/django-frontend:2
+          image: pumejlab/django-frontend:6
           imagePullPolicy: Always
           ports:
             - containerPort: 80 # Update to 3001 if port assigned in docker is 3001. Same in service
