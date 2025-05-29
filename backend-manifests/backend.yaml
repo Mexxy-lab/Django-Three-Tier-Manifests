@@ -47,6 +47,12 @@ spec:
               value: "mysql-django"
             - name: DB_PORT
               value: "3306"
+            - name: FRONTEND_ORIGIN
+              value: "https://django.pumej.com"
+            - name: FRONTEND_ORIGIN_PROD
+              value: "https://django.pumej.com"
+            - name: CORS_ALLOW_ALL
+              value: "False"              
 ---
 apiVersion: v1
 kind: Service

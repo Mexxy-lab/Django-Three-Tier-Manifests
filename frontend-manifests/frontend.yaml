@@ -20,9 +20,9 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 80 # Update to 3001 if port assigned in docker is 3001. Same in service
-          # env:
-          #   - name: REACT_APP_API_BASE
-          #     value: "http://django-service.django.svc.cluster.local:8000"
+          env:
+            - name: REACT_APP_API_BASE
+              value: "https://django.pumej.com/api"
           resources:
             requests:
               cpu: "500m"

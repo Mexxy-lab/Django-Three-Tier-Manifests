@@ -1,0 +1,39 @@
+# cloudflared-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudflared
+  namespace: cloudflared
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cloudflared
+  template:
+    metadata:
+      labels:
+        app: cloudflared
+    spec:
+      containers:
+        - name: cloudflared
+          image: cloudflare/cloudflared:latest
+          args:
+            - tunnel
+            - --no-autoupdate
+            - run
+            - --token
+            - TUNNEL_TOKEN_PLACEHOLDER
+          volumeMounts:
+            - name: creds
+              mountPath: /etc/cloudflared
+              readOnly: true
+      volumes:
+        - name: creds
+          secret:
+            secretName: cloudflared-credentials
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cloudflared
+  namespace: cloudflared

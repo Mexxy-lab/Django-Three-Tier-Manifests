@@ -43,7 +43,7 @@ kubectl apply -f namespace.yaml
 kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.15.1/cert-manager.yaml
 kubectl apply -f cluster-issuer.yaml
 kubectl apply -f secrets.yaml
-kubectl apply -f mysqlstatefulset.yaml
+kubectl apply -f mysql-statefulset.yaml
 kubectl apply -f backend-manifests/backend.yaml
 kubectl apply -f frontend-manifests/frontend.yaml
 kubectl apply -f ingress.yaml
@@ -61,9 +61,12 @@ Once deployed, **migrate the database** in the Django backend: You need to creat
 kubectl exec -it mysql-0 -n django -- mysql -u root -p        | Login with password set in secrets file. 
 CREATE DATABASE django_database;
 
-kubectl exec -it django-backend-7745655654-vpzgd -n django -- python manage.py makemigrations 
-kubectl exec -it django-backend-7745655654-vpzgd -n django -- python manage.py migrate
-kubectl exec -it django-backend-7745655654-vpzgd -n django -- python manage.py createsuperuser
+kubectl exec -it django-backend-7745655654-rg72c -n django -- python manage.py makemigrations 
+kubectl exec -it django-backend-7745655654-rg72c -n django -- python manage.py migrate
+kubectl exec -it django-backend-7745655654-rg72c -n django -- python manage.py createsuperuser
+kubectl exec -n django frontend-django-595ffd56d5-h8p7l -- curl https://django.pumej.com/api
+kubectl exec -it django-backend-7745655654-rg72c -n django -- nslookup mysql-django
+
 ```
 
 You can find the backend pod name using:
