@@ -56,8 +56,8 @@ spec:
                 name: frontend-django-service
                 port:
                   number: 80
-          - path: /api
-            pathType: ImplementationSpecific
+          - path: /api/
+            pathType: Prefix
             backend:
               service:
                 name: django-service

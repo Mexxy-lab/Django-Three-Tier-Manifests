@@ -61,11 +61,12 @@ Once deployed, **migrate the database** in the Django backend: You need to creat
 kubectl exec -it mysql-0 -n django -- mysql -u root -p        | Login with password set in secrets file. 
 CREATE DATABASE django_database;
 
-kubectl exec -it django-backend-7745655654-rg72c -n django -- python manage.py makemigrations 
-kubectl exec -it django-backend-7745655654-rg72c -n django -- python manage.py migrate
-kubectl exec -it django-backend-7745655654-rg72c -n django -- python manage.py createsuperuser
-kubectl exec -n django frontend-django-595ffd56d5-h8p7l -- curl https://django.pumej.com/api
-kubectl exec -it django-backend-7745655654-rg72c -n django -- nslookup mysql-django
+kubectl exec -it django-backend-79f7cd6bcd-g7htf -n django -- python manage.py makemigrations 
+kubectl exec -it django-backend-79f7cd6bcd-g7htf -n django -- python manage.py migrate
+kubectl exec -it django-backend-79f7cd6bcd-g7htf -n django -- python manage.py migrate api
+kubectl exec -it django-backend-78646bd6d9-gspxk -n django -- python manage.py createsuperuser
+kubectl exec -n django-backend-79f7cd6bcd-g7htf -- curl https://django.pumej.com/api
+kubectl port-forward svc/django-service 8001:8000 -n django             | Used to forward port of backend service you can then access it on http://localhost:8001/admin/api/item/
 
 ```
 
