@@ -40,3 +40,35 @@ echo "Applying Ingress..."
 kubectl apply -f ingress.yaml -n $NAMESPACE
 
 echo "All resources applied successfully."
+
+# === Wait for MySQL to be ready ===
+echo "Waiting for MySQL pod to be ready..."
+kubectl wait --for=condition=ready pod -l app=mysql -n $NAMESPACE --timeout=120s
+
+# === Create database ===
+echo "Creating 'django_database' in MySQL..."
+kubectl exec -i mysql-0 -n $NAMESPACE -- mysql -u root -p"${MYSQL_ROOT_PASSWORD}" <<EOF
+CREATE DATABASE IF NOT EXISTS django_database;
+EOF
+
+# === Wait for Django backend pod to be ready ===
+echo "Waiting for Django backend pod to be ready..."
+kubectl wait --for=condition=ready pod -l app=django-backend -n $NAMESPACE --timeout=120s
+
+# === Get the backend pod name ===
+BACKEND_POD=$(kubectl get pods -n $NAMESPACE -l app=django-backend -o jsonpath="{.items[0].metadata.name}")
+
+# === Run Django setup commands ===
+echo "Running Django migrations and setup..."
+
+kubectl exec -it $BACKEND_POD -n $NAMESPACE -- python manage.py makemigrations api
+
+kubectl exec -it $BACKEND_POD -n $NAMESPACE -- python manage.py migrate
+
+kubectl exec -it $BACKEND_POD -n $NAMESPACE -- python manage.py migrate api
+# Optional: only include the next lines if interactive input is handled or skipped
+kubectl exec -it $BACKEND_POD -n $NAMESPACE -- python manage.py createsuperuser --input
+
+kubectl exec -it $BACKEND_POD -n $NAMESPACE -- python manage.py seed_items
+
+echo "Database created, resources and migrations applied successfully."
