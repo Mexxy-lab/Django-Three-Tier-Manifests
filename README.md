@@ -61,11 +61,11 @@ Once deployed, **migrate the database** in the Django backend: You need to creat
 kubectl exec -it mysql-0 -n django -- mysql -u root -p        | Login with password set in secrets file. 
 CREATE DATABASE django_database;
 
-kubectl exec -it django-backend-79f7cd6bcd-g7htf -n django -- python manage.py makemigrations 
-kubectl exec -it django-backend-79f7cd6bcd-g7htf -n django -- python manage.py migrate
-kubectl exec -it django-backend-79f7cd6bcd-g7htf -n django -- python manage.py migrate api
-kubectl exec -it django-backend-78646bd6d9-gspxk -n django -- python manage.py createsuperuser
-kubectl exec -n django-backend-79f7cd6bcd-g7htf -- curl https://django.pumej.com/api
+kubectl exec -it django-backend-78fb555bcb-znvx8 -n django -- python manage.py makemigrations api
+kubectl exec -it django-backend-78fb555bcb-znvx8 -n django -- python manage.py migrate
+kubectl exec -it django-backend-78fb555bcb-znvx8 -n django -- python manage.py migrate api
+kubectl exec -it django-backend-78fb555bcb-znvx8 -n django -- python manage.py createsuperuser
+kubectl exec -it django-backend-78fb555bcb-znvx8 -n django -- python manage.py seed_items         | Used to seed items into your database, run this from your python env
 kubectl port-forward svc/django-service 8001:8000 -n django             | Used to forward port of backend service you can then access it on http://localhost:8001/admin/api/item/
 
 ```
@@ -129,7 +129,7 @@ credentials-file: /home/nepra/.cloudflared/XXX.json
 
 ingress:
   - hostname: django.pumej.com
-    service: http://127.0.0.1:Nodeport
+    service: http://127.0.0.1:backend-port
   - service: http_status:404
 ```
 
