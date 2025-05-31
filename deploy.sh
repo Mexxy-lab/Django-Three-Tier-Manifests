@@ -2,9 +2,19 @@
 set -e
 
 NAMESPACE=django
+NAMESPACE2=cloudflared
 
 echo "Creating namespace..."
 kubectl apply -f namespace.yaml
+
+echo "Creating cloudflared secrets..."
+kubectl create secret generic cloudflared-credentials \
+  --from-file=476acb2e-2775-4e77-8cdf-81eee2d48633.json=$HOME/.cloudflared/476acb2e-2775-4e77-8cdf-81eee2d48633.json \
+  --from-file=config.yml=/home/pumej/.cloudflared/config.yml \
+  -n $NAMESPACE2
+
+echo "Applying cloudflared manifests......"
+kubectl apply -f cloudflared-deployment.yaml -n $NAMESPACE2
 
 echo "Applying secrets..."
 kubectl apply -f secrets.yaml -n $NAMESPACE
