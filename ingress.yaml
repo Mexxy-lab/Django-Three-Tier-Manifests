@@ -55,7 +55,7 @@ spec:
               service:
                 name: frontend-django-service
                 port:
-                  number: 80
+                  number: 3001
           - path: /api/
             pathType: Prefix
             backend:
