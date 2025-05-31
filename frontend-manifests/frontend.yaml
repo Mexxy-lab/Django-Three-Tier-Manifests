@@ -41,7 +41,7 @@ spec:
   selector:
     app: frontend-django
   ports:
-    - port: 8081     # This port is the nginx controller http port. By default it's port 80 for http and 443 for https. 
+    - port: 80     # This port is the nginx controller http port. By default it's port 80 for http and 443 for https. 
       # targetPort: 80
       targetPort: 3001
       protocol: TCP
