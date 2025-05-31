@@ -62,7 +62,6 @@ kubectl exec -it "$BACKEND_POD" -n "$NAMESPACE" -- python manage.py makemigratio
 kubectl exec -it "$BACKEND_POD" -n "$NAMESPACE" -- python manage.py migrate
 kubectl exec -it "$BACKEND_POD" -n "$NAMESPACE" -- python manage.py migrate api
 kubectl exec -it "$BACKEND_POD" -n "$NAMESPACE" -- python manage.py createsuperuser
-
 kubectl exec -it "$BACKEND_POD" -n "$NAMESPACE" -- python manage.py seed_items
 
 echo "✅ Deployment complete and Django setup finished successfully."
