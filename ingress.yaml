@@ -33,6 +33,8 @@
 #         - django.pumej.com
 #       secretName: app-tls
 
+# Used for cloudfare service on host
+
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -67,3 +69,4 @@ spec:
     - hosts:
         - django.pumej.com
       secretName: app-tls
+

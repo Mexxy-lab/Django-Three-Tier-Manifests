@@ -131,12 +131,12 @@ sudo nano /etc/cloudflared/config.yml
 Paste the following:
 
 ```yaml
-tunnel: XXX-ID
-credentials-file: /home/nepra/.cloudflared/XXX.json
+tunnel: 476acb2e-2775-4e77-8cdf-81eee2d48633
+credentials-file: /etc/cloudflared/476acb2e-2775-4e77-8cdf-81eee2d48633.json
 
 ingress:
   - hostname: django.pumej.com
-    service: http://127.0.0.1:backend-port
+    service: http://127.0.0.1:8000
   - service: http_status:404
 ```
 

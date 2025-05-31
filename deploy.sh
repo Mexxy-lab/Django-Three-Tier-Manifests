@@ -2,19 +2,9 @@
 set -e
 
 NAMESPACE=django
-NAMESPACE2=cloudflared
 
 echo "Creating namespace..."
 kubectl apply -f namespace.yaml
-
-echo "Creating cloudflared secrets..."
-kubectl create secret generic cloudflared-credentials \
-  --from-file=476acb2e-2775-4e77-8cdf-81eee2d48633.json=$HOME/.cloudflared/476acb2e-2775-4e77-8cdf-81eee2d48633.json \
-  --from-file=config.yml=/home/pumej/.cloudflared/config.yml \
-  -n $NAMESPACE2
-
-echo "Applying cloudflared manifests......"
-kubectl apply -f cloudflared-deployment.yaml -n $NAMESPACE2
 
 echo "Applying secrets..."
 kubectl apply -f secrets.yaml -n $NAMESPACE
@@ -28,8 +18,11 @@ kubectl wait --for=condition=Ready pod -l app=mysql -n $NAMESPACE --timeout=120s
 MYSQL_POD=$(kubectl get pods -n $NAMESPACE -l app=mysql -o jsonpath="{.items[0].metadata.name}")
 MYSQL_ROOT_PASSWORD=$(kubectl get secret django-secrets -n $NAMESPACE -o jsonpath="{.data.MYSQL_ROOT_PASSWORD}" | base64 --decode)
 
+echo "Waiting for MySQL to be ready inside the pod..."
+sleep 30
+
 kubectl exec -i "$MYSQL_POD" -n "$NAMESPACE" -- \
-  sh -c "mysql -h 127.0.0.1 -u root -p\"$MYSQL_ROOT_PASSWORD\" -e 'CREATE DATABASE IF NOT EXISTS django_database;'"
+  sh -c "mysql -h localhost -u root -p"$MYSQL_ROOT_PASSWORD" -e 'CREATE DATABASE IF NOT EXISTS django_database;'"
 
 echo "Applying Django backend deployment and service..."
 kubectl apply -f backend-manifests/backend.yaml -n $NAMESPACE
