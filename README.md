@@ -67,7 +67,14 @@ kubectl exec -it django-backend-78fb555bcb-znvx8 -n django -- python manage.py m
 kubectl exec -it django-backend-78fb555bcb-znvx8 -n django -- python manage.py createsuperuser
 kubectl exec -it django-backend-c4d5469d7-5z276 -n django -- python manage.py seed_items         | Used to seed items into your database, run this from your python env
 kubectl port-forward svc/django-service 8001:8000 -n django             | Used to forward port of backend service you can then access it on http://localhost:8001/admin/api/item/
+```
 
+## If you need to update or change nginx controller port from http 80 to a different port you can use below commands: you must update both the deployment and service. Also update your application service port. 
+
+```bash
+kubectl edit deployment ingress-nginx-controller -n ingress-nginx                   | Used to update the nginx controller port, update args section "- --http-port=8081"
+kubectl edit svc ingress-nginx-controller -n ingress-nginx                            | Used to update the nginx controller port on service side
+kubectl rollout restart deployment ingress-nginx-controller -n ingress-nginx              | Used to restart the pods for the change to take effect
 ```
 
 You can find the backend pod name using:
