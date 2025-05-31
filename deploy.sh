@@ -39,36 +39,30 @@ kubectl wait --namespace ingress-nginx \
 echo "Applying Ingress..."
 kubectl apply -f ingress.yaml -n $NAMESPACE
 
-echo "All resources applied successfully."
+echo "✅ cluster resources deployed successfully."
 
-# === Wait for MySQL to be ready ===
 echo "Waiting for MySQL pod to be ready..."
-kubectl wait --for=condition=ready pod -l app=mysql -n $NAMESPACE --timeout=120s
+kubectl wait --for=condition=Ready pod -l app=mysql -n $NAMESPACE --timeout=120s
 
-# === Create database ===
+MYSQL_POD=$(kubectl get pods -n $NAMESPACE -l app=mysql -o jsonpath="{.items[0].metadata.name}")
+MYSQL_ROOT_PASSWORD=$(kubectl get secret django-secrets -n $NAMESPACE -o jsonpath="{.data.MYSQL_ROOT_PASSWORD}" | base64 --decode)
+
 echo "Creating 'django_database' in MySQL..."
-kubectl exec -i mysql-0 -n $NAMESPACE -- mysql -u root -p"${MYSQL_ROOT_PASSWORD}" <<EOF
-CREATE DATABASE IF NOT EXISTS django_database;
-EOF
+kubectl exec -i "$MYSQL_POD" -n "$NAMESPACE" -- \
+  sh -c "mysql -u root -p\"$MYSQL_ROOT_PASSWORD\" -e 'CREATE DATABASE IF NOT EXISTS django_database;'"
 
-# === Wait for Django backend pod to be ready ===
 echo "Waiting for Django backend pod to be ready..."
-kubectl wait --for=condition=ready pod -l app=django-backend -n $NAMESPACE --timeout=120s
+kubectl wait --for=condition=Ready pod -l app=django -n $NAMESPACE --timeout=180s
 
-# === Get the backend pod name ===
-BACKEND_POD=$(kubectl get pods -n $NAMESPACE -l app=django-backend -o jsonpath="{.items[0].metadata.name}")
+BACKEND_POD=$(kubectl get pods -n $NAMESPACE -l app=django -o jsonpath="{.items[0].metadata.name}")
 
-# === Run Django setup commands ===
-echo "Running Django migrations and setup..."
+echo "Running Django migrations and setup... of superuser"
 
-kubectl exec -it $BACKEND_POD -n $NAMESPACE -- python manage.py makemigrations api
+kubectl exec -it "$BACKEND_POD" -n "$NAMESPACE" -- python manage.py makemigrations api
+kubectl exec -it "$BACKEND_POD" -n "$NAMESPACE" -- python manage.py migrate
+kubectl exec -it "$BACKEND_POD" -n "$NAMESPACE" -- python manage.py migrate api
+kubectl exec -it "$BACKEND_POD" -n "$NAMESPACE" -- python manage.py createsuperuser
 
-kubectl exec -it $BACKEND_POD -n $NAMESPACE -- python manage.py migrate
+kubectl exec -it "$BACKEND_POD" -n "$NAMESPACE" -- python manage.py seed_items
 
-kubectl exec -it $BACKEND_POD -n $NAMESPACE -- python manage.py migrate api
-# Optional: only include the next lines if interactive input is handled or skipped
-kubectl exec -it $BACKEND_POD -n $NAMESPACE -- python manage.py createsuperuser --input
-
-kubectl exec -it $BACKEND_POD -n $NAMESPACE -- python manage.py seed_items
-
-echo "Database created, resources and migrations applied successfully."
+echo "✅ Deployment complete and Django setup finished successfully."
